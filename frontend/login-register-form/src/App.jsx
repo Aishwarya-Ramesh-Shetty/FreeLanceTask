@@ -1,11 +1,13 @@
 import { useState } from "react";
 import "./App.css";
+import Dashboard from "./Dashboard";
 
 function App() {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [user, setUser] = useState(null);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -72,7 +74,7 @@ function App() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const isValid = validateForm();
@@ -82,15 +84,74 @@ function App() {
       return;
     }
 
-    setSuccessMessage(
-      isLogin
-        ? "Login successful! Welcome back."
-        : "Registration successful! Your account has been created."
-    );
+    try {
+      const endpoint = isLogin
+        ? "http://localhost:5000/api/auth/login"
+        : "http://localhost:5000/api/auth/register";
 
-    console.log("Submitted data:", formData);
+      const requestBody = isLogin
+        ? {
+          email: formData.email,
+          password: formData.password,
+        }
+        : {
+          fullName: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+        };
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setSuccessMessage("");
+
+        setErrors({
+          email: data.message,
+        });
+
+        return;
+      }
+
+      setErrors({});
+
+      if (isLogin) {
+        localStorage.setItem("token", data.token);
+        setUser(data.user);
+      } else {
+        setSuccessMessage(data.message);
+      }
+
+
+    } catch (error) {
+      console.error("Authentication request failed:", error);
+
+      setSuccessMessage("");
+
+      setErrors({
+        email: "Unable to connect to the server",
+      });
+    }
   };
 
+  if (user) {
+    return (
+      <Dashboard
+        user={user}
+        onLogout={() => {
+          localStorage.removeItem("token");
+          setUser(null);
+        }}
+      />
+    );
+  }
 
 
   return (
