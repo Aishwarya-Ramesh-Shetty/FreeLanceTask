@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import Dashboard from "./Dashboard";
 
@@ -15,6 +15,38 @@ function App() {
     password: "",
     confirmPassword: "",
   });
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      return;
+    }
+
+    const fetchUser = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/auth/me", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          setUser(data.user);
+        } else {
+          localStorage.removeItem("token");
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const [errors, setErrors] = useState({});
 
@@ -152,6 +184,9 @@ function App() {
       />
     );
   }
+
+
+
 
 
   return (
