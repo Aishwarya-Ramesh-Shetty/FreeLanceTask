@@ -25,7 +25,7 @@ function App() {
 
     const fetchUser = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/auth/me", {
+        const response = await fetch("https://freelancetask.onrender.com/api/auth/me", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -118,8 +118,8 @@ function App() {
 
     try {
       const endpoint = isLogin
-        ? "http://localhost:5000/api/auth/login"
-        : "http://localhost:5000/api/auth/register";
+        ? "https://freelancetask.onrender.com/api/auth/login"
+        : "https://freelancetask.onrender.com/api/auth/register";
 
       const requestBody = isLogin
         ? {
